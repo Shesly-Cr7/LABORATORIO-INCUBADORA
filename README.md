@@ -1,12 +1,11 @@
 # LABORATORIO-ENCUBADORA
 
 LABORATORIO-ENCUBADORA
-Integrantes Shesly Colorado - 5600756
-
-Santiago Mora - 5600775
-
-Daniel Herrera - 5600588
-
+Integrantes 
+- Shesly Colorado - 5600756
+- Santiago Mora - 5600775
+- Daniel Herrera - 5600588
+-------
 ## Requisitos
 Software:
 - Arduino IDE
@@ -117,9 +116,19 @@ Sensor → ESP32 → OLED
 ## 6.2 Distema de temperaturaa y peso 
 Conexión del sensor Conexión de la OLED 
 ## 6.3 Funcionamiento 
-Cómo se mide la temperatura 
-Cómo se procesa 
-Cómo se visualiza
+## 6.3 Funcionamiento
+
+El ESP32 recibe los datos del sensor DHT22 y del módulo HX711, los procesa y los muestra en la pantalla OLED.
+
+El sistema implementa un control ON/OFF basado en umbrales de temperatura. Cuando la temperatura desciende por debajo del valor mínimo, se activa el bombillo como fuente de calor. Cuando la temperatura supera el valor máximo, se activa el ventilador para reducirla.
+
+Adicionalmente, se implementó un sistema de visualización mediante LEDs para indicar el estado térmico del sistema:
+
+- LED azul: temperatura menor a 36°C (riesgo de hipotermia)
+- LED verde: temperatura entre 36°C y 37.5°C (rango adecuado)
+- LED rojo: temperatura mayor a 37.5°C (riesgo de sobrecalentamiento)
+
+Este sistema permite una interpretación rápida del estado de la incubadora sin necesidad de observar la pantalla OLED.
 
 # Implementación 
 
