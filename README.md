@@ -182,8 +182,7 @@ Este sistema permite una interpretación rápida del estado de la incubadora sin
 
 # Implementación 
 
-## 7. Código Arduino Lectura del sensor Envío serial Visualización OLED
-# 7. Implementación
+## 7. Implementación
 
 ## 7.1 Descripción general del sistema
 
