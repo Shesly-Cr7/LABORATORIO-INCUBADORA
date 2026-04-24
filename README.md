@@ -67,23 +67,29 @@ Este flujo permite medir, analizar y representar la temperatura en tiempo real, 
 
 ## 4.1 Hardware
 
-ESP32 Sensor (DHT22 o LM35) OLED Circuito de fuente
+Para el desarrollo del prototipo se utilizaron los siguientes componentes: ESP32 como unidad de adquisición y procesamiento, sensor DHT22 para medición de temperatura y humedad, pantalla OLED SSD1306 para visualización local, módulo HX711 con celda de carga para medición de peso de 5Kg, módulo de relés para el control del bombillo calefactor y ventilador, fuente de alimentación, cables de conexión y estructura física de la incubadora a escala.
 
 ## 4.2 Software
 
-Arduino IDE MATLAB
+Se realizo un codigo en Arduino IDE para el sistema te control ON/OFF y para la configuración de los sensores usados.
+
+El sistema fue diseñado para medir variables relevantes dentro de una incubadora neonatal a escala. El sensor DHT22 mide la temperatura y humedad interna, mientras que la celda de carga permite estimar el peso colocado sobre la plataforma. El ESP32 recibe estas señales, las procesa y muestra los valores en la pantalla OLED.
+
+Además, el sistema incluye una etapa de actuación mediante relés (Control del sistema). El bombillo funciona como fuente de calor y el ventilador permite distribuir o reducir la temperatura interna. La lógica de control se basa en umbrales de temperatura: cuando la temperatura disminuye, se activa el bombillo; cuando la temperatura aumenta por encima del límite establecido, se activa el ventilador.
 
 # SEGURIDAD
 
 Durante el desarrollo del proyecto se deben tener en cuenta las siguientes medidas de seguridad:
 
-Verificar los niveles de voltaje antes de energizar el circuito. No exceder los 3.3 V en los pines del ESP32. Evitar cortocircuitos en la protoboard. Manipular correctamente los equipos electrónicos. Mantener ordenado el espacio de trabajo.
+Verificar los niveles de voltaje antes de energizar el circuito. No exceder los 5 V en los pines del ESP32 S3. Evitar cortocircuitos en la protoboard. Manipular correctamente los equipos electrónicos. Mantener ordenado el espacio de trabajo.
 
 Estas recomendaciones son fundamentales para prevenir daños en los dispositivos y garantizar un desarrollo seguro de la práctica .
 
 # Diseño del Sistema
 
 Parte estructural: 
+
+
 
 ## 6.1 Sistema de fuente 
 Sensor → ESP32 → OLED / MATLAB 
