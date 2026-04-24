@@ -33,7 +33,7 @@ Las incubadoras neonatales son dispositivos biomédicos fundamentales en las uni
 
 Uno de los factores más importantes en este tipo de sistemas es el control térmico. Los neonatos, particularmente los prematuros, presentan una limitada capacidad de termorregulación debido a su baja cantidad de grasa subcutánea y a la inmadurez de su sistema nervioso, lo que los hace altamente vulnerables a cambios de temperatura. Por esta razón, las incubadoras deben mantener un rango térmico controlado entre aproximadamente 36.5 °C y 37.5 °C, considerado óptimo para evitar complicaciones como hipotermia o hipertermia [4][5][6][7].
 
-El presente proyecto aborda el diseño e implementación de un sistema de monitoreo de temperatura para una incubadora neonatal a escala, utilizando sensores electrónicos y plataformas de adquisición de datos. Este sistema permite medir, visualizar y analizar la temperatura en tiempo real, integrando herramientas de instrumentación biomédica como microcontroladores y software de procesamiento de señales [1][8].
+El presente proyecto aborda el diseño e implementación de un sistema de monitoreo de temperatura para una incubadora neonatal a escala, utilizando sensores electrónicos y plataformas de adquisición de datos. Este sistema permite medir y visualizar la temperatura en tiempo real, integrando herramientas de instrumentación biomédica como microcontroladores y software de procesamiento de señales [1][8].
 
 Desde el punto de vista de la instrumentación biomédica, este desarrollo permite aplicar conceptos de adquisición de señales, sensores, procesamiento de datos y visualización, los cuales son esenciales en el diseño de dispositivos médicos. Además, contribuye a comprender la importancia del control preciso de variables fisiológicas en aplicaciones clínicas [9][10].
 
@@ -83,6 +83,14 @@ Sensor → Adquisición (ESP32) → Procesamiento → Visualización (OLED)
 
 Este flujo permite medir, analizar y representar la temperatura en tiempo real, facilitando la toma de decisiones en sistemas biomédicos.
 
+## 3.6 Comparación de estrategias de control
+
+En el control de temperatura de incubadoras existen diferentes estrategias, entre las cuales destacan el control ON/OFF y el control proporcional.
+El control ON/OFF, implementado en este proyecto, funciona mediante la activación o desactivación completa del actuador (bombillo) cuando la temperatura cruza ciertos umbrales. Este tipo de control es sencillo, pero genera oscilaciones alrededor del valor deseado, como se observó en el comportamiento del sistema.
+Por otro lado, el control proporcional, comúnmente implementado mediante modulación por ancho de pulso (PWM), permite regular la potencia del actuador de forma gradual. En este caso, el sistema no solo enciende o apaga el bombillo, sino que ajusta la cantidad de energía suministrada según el error de temperatura.
+Esto produce una respuesta más suave y reduce las oscilaciones, permitiendo mantener la temperatura más cercana al valor de referencia.
+En comparación, el sistema desarrollado utiliza un control ON/OFF debido a su simplicidad y facilidad de implementación, siendo adecuado para fines académicos. Sin embargo, un control proporcional o PID sería más apropiado para aplicaciones reales en incubadoras neonatales.
+
 # Materiales y Componentes
 
 ## 4.1 Hardware
@@ -91,7 +99,7 @@ Para el desarrollo del prototipo se utilizaron los siguientes componentes: ESP32
 
 ## 4.2 Software
 
-Se realizo un codigo en Arduino IDE para el sistema te control ON/OFF y para la configuración de los sensores usados.
+Se realizó un codigo en Arduino IDE para el sistema de control ON/OFF y para la configuración de los sensores usados.
 
 El sistema fue diseñado para medir variables relevantes dentro de una incubadora neonatal a escala. El sensor DHT22 mide la temperatura y humedad interna, mientras que la celda de carga permite estimar el peso colocado sobre la plataforma. El ESP32 recibe estas señales, las procesa y muestra los valores en la pantalla OLED.
 
@@ -101,7 +109,7 @@ Además, el sistema incluye una etapa de actuación mediante relés (Control del
 
 Durante el desarrollo del proyecto se deben tener en cuenta las siguientes medidas de seguridad:
 
-Verificar los niveles de voltaje antes de energizar el circuito. No exceder los 5 V en los pines del ESP32 S3. Evitar cortocircuitos en la protoboard. Manipular correctamente los equipos electrónicos. Mantener ordenado el espacio de trabajo.
+Verificar los niveles de voltaje antes de energizar el circuito. No exceder los 3.3 V en los pines del ESP32 S3. Evitar cortocircuitos en la protoboard. Manipular correctamente los equipos electrónicos. Mantener ordenado el espacio de trabajo.
 
 Estas recomendaciones son fundamentales para prevenir daños en los dispositivos y garantizar un desarrollo seguro de la práctica .
 
@@ -114,7 +122,7 @@ El diseño del sistema se realizó dividiendo el prototipo en **dos módulos pri
 ### 1. Cabina principal de incubación
 
 
-<img width="1599" height="899" alt="PHOTO-2026-04-23-09-32-01" src="https://github.com/user-attachments/assets/a104d7ea-a414-4e3d-9d09-5832b46efa79" />
+<img width="800" height="450" alt="PHOTO-2026-04-23-09-32-01" src="https://github.com/user-attachments/assets/a104d7ea-a414-4e3d-9d09-5832b46efa79" />
 
 La cabina principal corresponde a la estructura donde se simula el espacio interno de la incubadora neonatal. Esta parte está compuesta por una **cúpula transparente de plástico**, la cual permite observar el interior del sistema sin necesidad de abrirlo completamente. El uso de un material transparente fue importante porque facilita la supervisión visual del prototipo y ayuda a representar la idea de una incubadora real, donde es necesario mantener visibilidad sobre el neonato.
 
@@ -124,7 +132,7 @@ Además, en la parte superior inclinada de la cabina se observan **dos compuerta
 
 
 ### 2. Base estructural
-<img width="1599" height="899" alt="PHOTO-2026-04-23-09-31-26" src="https://github.com/user-attachments/assets/07335bb1-0417-44f5-a817-940dc10c4bed" />
+<img width="800" height="450" alt="PHOTO-2026-04-23-09-31-26" src="https://github.com/user-attachments/assets/07335bb1-0417-44f5-a817-940dc10c4bed" />
 
 La cúpula se encuentra apoyada sobre una **base fabricada en cartón madera**, la cual sirve como soporte mecánico principal del sistema. Esta base cumple varias funciones importantes:
 
@@ -138,7 +146,7 @@ El uso de cartón madera permitió construir una base rígida, económica y rela
 
 ### 3. Módulo lateral de electrónica y control
 
-<img width="1599" height="899" alt="PHOTO-2026-04-23-09-33-20" src="https://github.com/user-attachments/assets/070fbe35-4ca8-4fd7-a094-09d1b2b000f8" />
+<img width="800" height="450" alt="PHOTO-2026-04-23-09-33-20" src="https://github.com/user-attachments/assets/070fbe35-4ca8-4fd7-a094-09d1b2b000f8" />
 
 A un costado de la incubadora se ubicó una **caja de cartón independiente**, destinada a alojar la mayor parte del sistema electrónico. En esta caja se encuentran el circuito, el transformador, conexiones y otros elementos del sistema de control. Esta decisión de diseño fue útil porque permitió **separar físicamente la electrónica del interior de la incubadora**, reduciendo la exposición directa de los componentes al calor generado dentro de la cabina.
 
@@ -168,7 +176,7 @@ En conjunto, la parte estructural del sistema logró integrar una cabina visible
 
 
 
-## 6 Funcionamiento
+### 6. Funcionamiento
 
 El ESP32 recibe los datos del sensor DHT22 y del módulo HX711, los procesa y los muestra en la pantalla OLED.
 
@@ -182,9 +190,7 @@ Adicionalmente, se implementó un sistema de visualización mediante LEDs para i
 
 Este sistema permite una interpretación rápida del estado de la incubadora sin necesidad de observar la pantalla OLED.
 
-# Implementación 
-
-## 7. Implementación
+### 7. Implementación
 
 ## 7.1 Descripción general del sistema
 
@@ -435,9 +441,23 @@ Además, aunque el sistema sí mide **temperatura, humedad y peso**, todavía **
 
 Finalmente, tanto la medición del peso como la de temperatura dependen de la calibración y de las características de los sensores empleados. La galga de carga de 5 kg y el DHT22 funcionaron adecuadamente para fines de laboratorio, pero su precisión y respuesta siguen siendo limitadas frente a sensores de uso biomédico real [15][16][18]
 
-# Costos 
-Lista de componentes con precio Costo total Comparación con incubadoras reales
+## Costos generales del sistema
 
+| Componente           | Cantidad | Precio Unitario (COP) | Subtotal (COP) |
+|:--------------------:|:--------:|:---------------------:|:--------------:|
+| Transformador M-502 | 1        | 55,000                | 55,000         |
+| Celda de carga 5 kg | 1        | 22,000                | 22,000         |
+| Módulo HX711        | 1        | 7,500                 | 7,500          |
+| MDF (pliego)        | 1        | 21,000                | 21,000         |
+| Palo de balso 15x15 | 4        | 2,500                 | 10,000         |
+| Sensor DHT22        | 1        | 9,000                 | 9,000          |
+| Regulador LM7805    | 1        | 3,000                 | 3,000          |
+| Bombillo 100W       | 1        | 4,000                 | 4,000          |
+| Módulo relé         | 1        | 10,000                | 10,000         |
+| Ventilador          | 1        | 8,000                 | 8,000          |
+| **TOTAL**           |          |                       | **149,500**    |
+
+**Nota:** Componentes como el ESP32 y la pantalla OLED no fueron incluidos en el cálculo de costos, ya que se contaba previamente con ellos para el desarrollo del proyecto.
 
 # Limitaciones del Sistema
 
