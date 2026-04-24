@@ -489,9 +489,7 @@ Finalmente, tanto la medición del peso como la de temperatura dependen de la ca
 
 ----------
 
-# 11
-
-. Limitaciones del Sistema
+# 11. Limitaciones del Sistema
 
 El prototipo desarrollado corresponde a un sistema experimental con fines académicos, por lo que no cumple con los requisitos necesarios para su uso clínico. No cuenta con certificaciones médicas, materiales biomédicos especializados ni condiciones de seguridad equivalentes a las de una incubadora neonatal real.
 
