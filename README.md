@@ -393,11 +393,49 @@ Lista de componentes con precio Costo total Comparación con incubadoras reales
 
 # Limitaciones del Sistema
 
-No es sistema real médico Falta control automático No mide otras variables (flujo, peso, etc.)
+# Limitaciones del Sistema
+
+Aunque el prototipo desarrollado cumplió con el objetivo académico de emular el funcionamiento básico de una incubadora neonatal a escala, el sistema presenta varias limitaciones importantes que deben tenerse en cuenta.
+
+En primer lugar, **no se trata de un dispositivo médico real**, sino de un montaje experimental con fines de aprendizaje. Por esta razón, el sistema no cuenta con certificaciones clínicas, materiales biomédicos especializados ni condiciones de seguridad equivalentes a las exigidas en una incubadora neonatal hospitalaria [18].
+
+Otra limitación importante es que el control implementado fue de tipo **ON/OFF**, el cual resulta funcional y sencillo para fines de laboratorio, pero no permite una regulación térmica tan precisa como la que se esperaría en un equipo clínico. Debido a esto, la temperatura presenta pequeñas oscilaciones alrededor del rango de referencia, en lugar de mantenerse completamente constante [6][8].
+
+Además, aunque el sistema sí mide **temperatura, humedad y peso**, aún **no incorpora otras variables críticas del monitoreo neonatal**, como saturación de oxígeno, frecuencia cardíaca, frecuencia respiratoria, concentración de CO2 o un control más preciso del flujo de aire. Estas variables también son relevantes en el contexto clínico y serían necesarias para acercar el prototipo a una incubadora neonatal más completa [17][18].
+
+Con respecto a la medición de peso, el uso de la **galga o celda de carga de 5 kg** con el módulo HX711 permitió obtener una estimación funcional, pero la precisión de esta medición depende de la correcta calibración del sistema y puede verse afectada por vibraciones, posición de la carga y pequeñas variaciones mecánicas de la estructura.
+
+De igual forma, el sensor **DHT22** resultó adecuado para el desarrollo académico del proyecto, pero su precisión y velocidad de respuesta siguen siendo limitadas frente a sensores más robustos empleados en aplicaciones biomédicas reales. Esto implica que el prototipo funciona bien como modelo didáctico, pero no como un sistema listo para uso clínico [15][16][18].
+
+Finalmente, el sistema tampoco incluye alarmas clínicas, registro avanzado de datos, comunicación remota ni estrategias de control más sofisticadas, como un controlador PID, que permitirían una supervisión más precisa y una respuesta más estable frente a cambios de temperatura [8][18].
 
 # Conclusiones
 
-Qué aprendiste Qué funcionó Qué mejorarías
+## ¿Qué aprendimos?
+
+Durante el desarrollo de este laboratorio se comprendió la importancia de las incubadoras neonatales en el cuidado del recién nacido, especialmente en lo relacionado con el control de la temperatura y del ambiente interno. También se reforzaron conocimientos de **instrumentación biomédica**, integración de sensores, adquisición de señales, procesamiento de datos y control de actuadores mediante un microcontrolador.
+
+Adicionalmente, se aprendió a integrar en un mismo sistema el sensor **DHT22**, la **galga o celda de carga de 5 kg** con el módulo **HX711**, la **pantalla OLED**, los **relés**, el **bombillo**, el **ventilador** y los **LEDs** de estado. Esto permitió entender cómo varias etapas de sensado, procesamiento, visualización y actuación pueden trabajar juntas dentro de un prototipo biomédico [8][15][16].
+
+## ¿Qué funcionó?
+
+El sistema desarrollado logró funcionar de manera satisfactoria como una **incubadora neonatal a escala**. La lectura de temperatura y humedad permitió monitorear el ambiente interno, mientras que la galga de carga permitió estimar el peso colocado sobre la base. Asimismo, la pantalla OLED mostró de forma clara las variables medidas en tiempo real.
+
+En cuanto al control térmico, el bombillo funcionó correctamente como fuente de calor y el ventilador ayudó a disminuir la temperatura cuando esta superó el límite establecido. El uso de los LEDs azul, verde y rojo también facilitó la identificación rápida del estado térmico del sistema, permitiendo saber visualmente si la temperatura estaba baja, normal o alta.
+
+En general, puede decirse que el prototipo sí cumplió con su propósito académico, ya que logró representar de manera básica el funcionamiento de una incubadora neonatal y permitió comprobar experimentalmente la utilidad del monitoreo y control de variables ambientales [4][5][6][8].
+
+## ¿Qué mejoraríamos?
+
+Como mejora principal, sería conveniente reemplazar el control ON/OFF por un **control más preciso**, por ejemplo un controlador **PID**, que permita reducir las oscilaciones de temperatura y mantener el sistema más cerca del valor deseado de forma continua [8][18].
+
+También sería recomendable incorporar **sensores de mayor exactitud y menor tiempo de respuesta**, de modo que la medición térmica sea más estable y confiable. En el caso del peso, una mejor calibración mecánica y electrónica podría aumentar la precisión de la galga de carga [15][16].
+
+Otra mejora importante sería añadir el monitoreo de **otras variables relevantes en neonatología**, como frecuencia cardíaca, saturación de oxígeno, frecuencia respiratoria o flujo de aire, para que el sistema se acerque más a una incubadora neonatal real [17][18].
+
+Finalmente, sería útil incluir funciones adicionales como **alarmas**, almacenamiento de datos, comunicación inalámbrica o supervisión remota, ya que estas características harían el sistema más completo, más seguro y más cercano a una aplicación biomédica de mayor nivel [18].
+
+En conclusión, el laboratorio permitió demostrar que es posible construir un prototipo funcional de incubadora neonatal a escala mediante el uso de sensores, actuadores y un microcontrolador. Aunque el sistema presenta limitaciones importantes frente a un equipo clínico real, cumplió su propósito formativo y permitió aplicar de manera práctica conceptos fundamentales de la instrumentación biomédica.
 
 # Preguntas de Discusión
 • Pregunta 1: ¿Qué otras variables (y por qué) además de las aquí mencionadas son críticas en el monitoreo neonatal?
