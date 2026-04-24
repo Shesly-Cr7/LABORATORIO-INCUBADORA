@@ -133,17 +133,260 @@ Este sistema permite una interpretación rápida del estado de la incubadora sin
 # Implementación 
 
 ## 7. Código Arduino Lectura del sensor Envío serial Visualización OLED
+# 7. Implementación
 
+## 7.1 Descripción general del sistema
+
+La implementación del prototipo se realizó en **Arduino IDE** utilizando un **ESP32** como unidad principal de control. El sistema fue diseñado para monitorear variables importantes dentro de una incubadora neonatal a escala, específicamente **temperatura, humedad y peso**, y actuar sobre ellas mediante un sistema de control térmico simple.
+
+Para ello se integraron los siguientes elementos:
+
+- **Sensor DHT22**, encargado de medir la temperatura y la humedad interna.
+- **Galga o celda de carga de 5 kg**, utilizada para estimar el peso colocado sobre la base.
+- **Módulo HX711**, que amplifica y convierte la señal de la galga de carga en una lectura interpretable por el ESP32.
+- **Pantalla OLED SSD1306**, donde se visualizan los valores medidos.
+- **Dos relés**, uno para controlar el bombillo y otro para controlar el ventilador.
+- **Tres LEDs**, usados como señalización visual rápida del estado térmico del sistema.
+- **Botón de tara**, que permite reiniciar la referencia de peso cuando no hay carga sobre la plataforma.
+
+En términos generales, el sistema funciona así: el ESP32 lee la temperatura y la humedad desde el DHT22, lee el peso desde la galga de carga con ayuda del HX711, muestra estos datos en la pantalla OLED y, dependiendo de la temperatura medida, activa el bombillo o el ventilador. Adicionalmente, enciende un LED de color diferente para indicar si la temperatura está baja, normal o alta.
+
+---
+
+## 7.2 Configuración inicial del programa
+
+La primera parte importante del código corresponde a la importación de librerías y a la definición de pines. Esta etapa es importante porque establece la comunicación entre el ESP32 y cada módulo del sistema.
+
+```cpp
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#include <DHT.h>
+#include "HX711.h"
 # Resultados
+```
+Estas librerías permiten manejar la pantalla OLED, leer el sensor DHT22 y adquirir los datos de la galga de carga mediante el módulo HX711.
 
-Durante las pruebas realizadas, el sistema registró temperaturas entre < 36°C y > 38°C. Se observó que el bombillo permitió incrementar la temperatura interna de la incubadora, mientras que el ventilador ayudó a disminuirla.
+Después de esto, se definen los pines utilizados:
+```cpp
+#define DHTPIN 41
+#define DHTTYPE DHT22
 
-El sistema logró mantener la temperatura cercana al rango deseado (36.5°C - 37.5°C), presentando pequeñas oscilaciones debido al control ON/OFF implementado.
+#define SDA_OLED 8
+#define SCL_OLED 9
 
-La celda de carga permitió medir el peso, aunque fue necesario realizar un proceso de calibración para mejorar la precisión de las mediciones.
+#define RELAY_K1 14   // Bombillo
+#define RELAY_K2 15   // Ventilador
+
+#define LED_BAJA 16
+#define LED_OK 17
+#define LED_ALTA 18
+
+#define HX_DT 11
+#define HX_SCK 12
+#define BOTON_TARA 10
+```
+
+Aquí se observa cómo quedó distribuido el sistema:
+
+- El DHT22 se conecta al pin 41.
+- La pantalla OLED usa comunicación I2C.
+- El relé K1 controla el bombillo.
+- El relé K2 controla el ventilador.
+- Los tres LEDs indican el estado de temperatura.
+- El HX711 se comunica con el ESP32 por dos pines digitales.
+- El botón de tara permite recalibrar la lectura del peso.
+
+## 7.3 Inicialización de variables y objetos principales
+
+Una vez definidos los pines, el código crea los objetos necesarios para trabajar con cada dispositivo y declara las variables principales del sistema:
+
+```cpp
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+DHT dht(DHTPIN, DHTTYPE);
+HX711 balanza;
+
+float T_OFF = 37.5;
+float T_ON = 36.0;
+
+float peso = 0.0;
+float pesoFiltrado = 0.0;
+float factor_calibracion = 286.0;
+
+float temperatura = 0.0;
+float humedad = 0.0;
+
+bool sistemaCalentando = true;
+```
+
+Aquí aparecen dos umbrales importantes:
+
+- T_ON = 36.0 °C, umbral inferior.
+- T_OFF = 37.5 °C, umbral superior.
+
+Estos dos valores son la base del control térmico. Cuando la temperatura baja del umbral inferior, el sistema enciende el bombillo para calentar. Cuando la temperatura llega al umbral superior, el bombillo se apaga y el ventilador puede activarse para ayudar a enfriar.
+
+También se define un factor de calibración para la galga de carga, ya que el HX711 no entrega el peso directamente en gramos, sino una señal que debe ajustarse experimentalmente
+
+## 7.4 Inicialización del hardware en setup()
+
+La función setup() se ejecuta una sola vez al encender el sistema. Su objetivo es dejar todos los módulos listos para funcionar correctamente.
+
+```cpp
+void setup() {
+  Serial.begin(115200);
+
+  pinMode(RELAY_K1, OUTPUT);
+  pinMode(RELAY_K2, OUTPUT);
+  pinMode(LED_BAJA, OUTPUT);
+  pinMode(LED_OK, OUTPUT);
+  pinMode(LED_ALTA, OUTPUT);
+  pinMode(BOTON_TARA, INPUT_PULLUP);
+
+  dht.begin();
+  Wire.begin(SDA_OLED, SCL_OLED);
+
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    Serial.println("OLED no detectada");
+    while (true);
+  }
+
+  balanza.begin(HX_DT, HX_SCK);
+  balanza.set_scale(factor_calibracion);
+  delay(1500);
+  balanza.tare(10);
+
+  display.clearDisplay();
+  display.setCursor(0, 20);
+  display.println("Sistema listo");
+  display.display();
+  delay(1000);
+}
+```
+
+En esta etapa se realizan varias acciones:
+
+1. Se inicia la comunicación serial.
+2. Se configuran como salida los pines de relés y LEDs.
+3. Se configura el botón de tara con resistencia pull-up interna.
+4. Se inicializa el sensor DHT22.
+5. Se inicializa la pantalla OLED.
+6. Se verifica si la OLED fue detectada correctamente.
+7. Se inicializa el módulo HX711.
+8. Se aplica el factor de calibración.
+9. Se realiza una tara inicial para que la lectura de peso comience desde cero.
+10. Se muestra en pantalla el mensaje “Sistema listo”.
+
+Esta parte es importante porque garantiza que el sistema arranque en condiciones conocidas y no con valores erróneos.
+
+
+## 7.5 Lectura de temperatura y humedad con el DHT22
+
+La medición de temperatura y humedad se realiza mediante el sensor **DHT22**, el cual se encarga de entregar ambas variables en formato digital. Estas dos magnitudes son importantes dentro del prototipo, ya que permiten conocer el estado interno de la incubadora a escala y, especialmente en el caso de la temperatura, tomar decisiones de control sobre el bombillo y el ventilador.
+
+En el programa, la lectura del sensor se implementó a través de una función específica:
+
+```cpp
+void leerDHT() {
+  float t = dht.readTemperature();
+  float h = dht.readHumidity();
+
+  if (!isnan(t)) temperatura = t;
+  if (!isnan(h)) humedad = h;
+}
+```
+
+Esta función realiza primero la adquisición de la temperatura y la humedad, almacenándolas temporalmente en las variables t y h. Posteriormente, el programa verifica que los datos obtenidos sean válidos mediante la condición !isnan(...). Esto evita que una lectura errónea o incompleta reemplace el último valor correcto guardado en el sistema.
+
+La variable más importante en esta etapa es la temperatura, ya que a partir de ella se define si el sistema debe activar el bombillo para calentar o el ventilador para enfriar. La humedad también se registra y se muestra al usuario, lo que permite tener una visión más completa del comportamiento interno de la incubadora.
+
+De esta manera, el DHT22 actúa como el sensor principal de monitoreo ambiental del prototipo, entregando la información básica necesaria para supervisar el funcionamiento del sistema en tiempo real.
+
+
+## 7.6 Medición de peso, visualización y funcionamiento general del sistema
+
+Además de la lectura de temperatura y humedad, el sistema integra una **galga o celda de carga de 5 kg** conectada al módulo **HX711**, una **pantalla OLED** para mostrar las variables medidas, un **botón de tara** para reiniciar la referencia del peso y un sistema de **LEDs de estado** para indicar de forma rápida la condición térmica interna del prototipo. :contentReference[oaicite:2]{index=2}
+
+La lectura del peso se realiza con el HX711, que toma la señal de la galga y la convierte en un valor que puede ser procesado por el ESP32. En el código se implementó un pequeño filtrado para suavizar la medición y evitar cambios bruscos por ruido o vibraciones:
+
+```cpp
+void leerPeso() {
+  if (balanza.is_ready()) {
+    float lectura = balanza.get_units(5);
+    pesoFiltrado = 0.7 * pesoFiltrado + 0.3 * lectura;
+
+    if (pesoFiltrado > -2.0 && pesoFiltrado < 2.0) {
+      pesoFiltrado = 0.0;
+    }
+
+    peso = pesoFiltrado;
+  }
+}
+```
+Este filtrado hace que la lectura mostrada sea más estable. Además, si el valor está muy cerca de cero, el sistema lo ajusta a cero para evitar errores pequeños cuando no hay carga sobre la base.
+
+Por otra parte, el prototipo cuenta con una función de tara, activada mediante un botón, que permite recalibrar la lectura del peso cuando la plataforma está vacía. Esto mejora la precisión de la medición durante el uso del sistema.
+
+Las variables principales del prototipo se muestran continuamente en la pantalla OLED: temperatura, humedad y peso. Esto permite que el usuario observe en tiempo real el comportamiento general de la incubadora.
+
+```cpp
+
+void mostrarOLED() {
+  display.clearDisplay();
+  display.setTextColor(SSD1306_WHITE);
+  display.setTextSize(1);
+
+  display.setCursor(0, 0);
+  display.println("Incubadora");
+
+  display.setCursor(0, 12);
+  display.print("Temp: ");
+  display.print(temperatura, 1);
+  display.println(" C");
+
+  display.setCursor(0, 24);
+  display.print("Hum : ");
+  display.print(humedad, 1);
+  display.println(" %");
+
+  display.setCursor(0, 36);
+  display.print("Peso: ");
+  display.print(peso, 1);
+  display.println(" g");
+
+  display.display();
+}
+```
+Como apoyo visual adicional, se implementó un sistema de tres LEDs para indicar rápidamente el estado térmico del prototipo:
+
+- LED azul: temperatura baja
+- LED verde: temperatura normal
+- LED rojo: temperatura alta
+
+Esta señalización permite interpretar de forma inmediata si la incubadora se encuentra por debajo, dentro o por encima del rango de funcionamiento esperado, sin necesidad de revisar únicamente la pantalla. Esa misma lógica de colores ya se describe en el borrador del proyecto.
+
+Finalmente, todas las tareas del sistema se coordinan dentro del ciclo principal del programa. Allí se revisa el botón de tara, se leen los sensores, se actualiza la lógica de control, se encienden los LEDs correspondientes y se refresca la información mostrada en la OLED. En conjunto, esta etapa permite que el prototipo no solo mida variables, sino que también las procese, las muestre al usuario y actúe de acuerdo con el estado térmico interno de la incubadora
+
 
 # Análisis de Resultados
+
 ¿La temperatura es estable? ¿Hay ruido en la señal? ¿Qué tan preciso es el sensor? Comparación entre sensores (LM35 vs DHT22)
+
+A partir de las pruebas realizadas, se observó que el sistema logró mantener la temperatura interna de la incubadora cercana al rango deseado de funcionamiento, aproximadamente entre **36.5 °C y 37.5 °C**, aunque con pequeñas oscilaciones. Este comportamiento es coherente con el tipo de control implementado, ya que se utilizó una estrategia **ON/OFF**, en la cual el bombillo se activa cuando la temperatura desciende por debajo del límite inferior y el ventilador ayuda a disminuirla cuando se supera el umbral superior. Por ello, la temperatura no permanece completamente fija en un solo valor, sino que fluctúa alrededor del rango establecido, lo cual es normal en este tipo de sistemas [4][5][6][8][13][14].
+
+En este sentido, puede afirmarse que la temperatura fue **suficientemente estable para un prototipo académico a escala**, debido a que el sistema sí respondió ante los cambios térmicos del interior de la incubadora y consiguió mantenerse cercano al intervalo esperado. Sin embargo, no se alcanzó una estabilidad perfecta, ya que el control ON/OFF no regula la potencia de forma continua, sino que trabaja por activación y desactivación de los actuadores [8]. Esto explica la presencia de pequeñas subidas y bajadas alrededor del valor objetivo.
+
+Con respecto al **ruido en la señal**, no se evidenció un comportamiento excesivamente inestable, aunque sí pequeñas variaciones en la lectura de temperatura. Estas fluctuaciones pueden atribuirse al tiempo de respuesta del sensor, a la dinámica térmica de la incubadora, al encendido y apagado del bombillo y del ventilador, y a la circulación del aire dentro del sistema. En otras palabras, más que un ruido severo o una falla de medición, lo que se observó fue un comportamiento normal de oscilación asociado tanto al sensor como al método de control utilizado [8][15][16].
+
+En cuanto a la **precisión del sensor**, el **DHT22** ofrece una precisión aproximada de **±0.5 °C**, además de permitir la medición simultánea de temperatura y humedad. Estas características lo convierten en una opción adecuada para aplicaciones de monitoreo ambiental en prototipos académicos, especialmente cuando se busca una implementación sencilla y de bajo costo. Asimismo, su resolución de 0.1 °C y su salida digital facilitan la adquisición de datos desde el ESP32 sin requerir una etapa adicional de conversión analógica [15][16].
+
+Al comparar el **LM35** y el **DHT22**, se observan diferencias importantes en su funcionamiento. El **LM35** es un sensor **analógico** que entrega un voltaje proporcional a la temperatura, por lo que requiere una lectura mediante el ADC del microcontrolador y un procesamiento adicional para convertir ese voltaje en grados Celsius. En cambio, el **DHT22** es un sensor **digital** que entrega directamente los valores procesados de **temperatura y humedad**, simplificando la adquisición de datos y reduciendo parte del acondicionamiento necesario en el sistema [12][15][16].
+
+Desde el punto de vista práctico, el **LM35** puede resultar conveniente cuando se desea medir únicamente temperatura con un circuito relativamente simple. No obstante, el **DHT22** ofrece ventajas importantes para este tipo de prototipo, ya que permite medir **dos variables con un solo sensor**, mejora la integración con plataformas como el ESP32 y facilita la programación del sistema al no depender directamente de una lectura analógica. Además, para una incubadora neonatal a escala, la posibilidad de monitorear tanto la temperatura como la humedad representa una ventaja funcional frente al LM35 [12][15][16].
+
+Aun así, también es importante considerar que el **LM35** puede presentar una lectura más continua al tratarse de un sensor analógico, mientras que el **DHT22** trabaja con una velocidad de muestreo más baja, aproximadamente una lectura cada 2 segundos. Por tanto, la elección entre ambos sensores depende del objetivo del sistema: si solo se requiere temperatura, el LM35 puede ser una opción válida; si se busca una medición ambiental más completa y una integración sencilla, el DHT22 resulta más conveniente [12][15][16].
+
+En términos generales, los resultados obtenidos muestran que el prototipo fue capaz de cumplir su función académica de monitorear la temperatura interna y responder a sus variaciones mediante un sistema básico de calefacción y ventilación. La temperatura se mantuvo cerca del rango esperado, las oscilaciones observadas fueron coherentes con un control ON/OFF, y el DHT22 proporcionó una precisión aceptable para fines de laboratorio. Como mejora futura, sería recomendable implementar un control más avanzado, como PID, y utilizar sensores de mayor exactitud y menor tiempo de respuesta, con el fin de lograr una regulación térmica más fina y más cercana al comportamiento de una incubadora neonatal real [6][8][18].
 
 # Costos 
 Lista de componentes con precio Costo total Comparación con incubadoras reales
