@@ -473,7 +473,7 @@ Finalmente, tanto la medición del peso como la de temperatura dependen de la ca
 
 | Componente           | Cantidad | Precio Unitario (COP) | Subtotal (COP) |
 |:--------------------:|:--------:|:---------------------:|:--------------:|
-| Transformador M-502 | 1        | 55,000                | 55,000         |
+| Transformador M-502 | 1        |18,000                | 18,000         |
 | Celda de carga 5 kg | 1        | 22,000                | 22,000         |
 | Módulo HX711        | 1        | 7,500                 | 7,500          |
 | MDF (pliego)        | 1        | 21,000                | 21,000         |
@@ -482,8 +482,8 @@ Finalmente, tanto la medición del peso como la de temperatura dependen de la ca
 | Regulador LM7805    | 1        | 3,000                 | 3,000          |
 | Bombillo 100W       | 1        | 4,000                 | 4,000          |
 | Módulo relé         | 1        | 10,000                | 10,000         |
-| Ventilador          | 1        | 8,000                 | 8,000          |
-| **TOTAL**           |          |                       | **149,500**    |
+| Ventilador          | 1        | 10,000                 | 10,000          |
+| **TOTAL**           |          |                       | **115,500**    |
 
 **Nota:** Componentes como el ESP32 y la pantalla OLED no fueron incluidos en el cálculo de costos, ya que se contaba previamente con ellos para el desarrollo del proyecto.
 
